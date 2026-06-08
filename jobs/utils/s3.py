@@ -1,7 +1,7 @@
 """
 jobs/utils/s3.py
-Shared S3 client and helper functions pointing at LocalStack.
-All tasks import from here — credentials are read from environment variables.
+shared s3 client and helper functions pointing at localstack.
+all tasks import from here — credentials are read from environment variables.
 """
 from __future__ import annotations
 
@@ -26,14 +26,14 @@ def get_client() -> boto3.client:
 
 
 def ensure_bucket(s3) -> None:
-    """Create the bucket if it does not already exist."""
+    """create the bucket if it does not already exist."""
     existing = [b["Name"] for b in s3.list_buckets().get("Buckets", [])]
     if BUCKET not in existing:
         s3.create_bucket(Bucket=BUCKET)
 
 
 def key_exists(s3, key: str) -> bool:
-    """Return True if an S3 key exists (used for idempotency checks)."""
+    """return true if an s3 key exists (used for idempotency checks)."""
     try:
         s3.head_object(Bucket=BUCKET, Key=key)
         return True
@@ -59,7 +59,7 @@ def get_bytes(s3, key: str) -> bytes:
 
 
 def put_parquet(s3, key: str, df: pd.DataFrame) -> None:
-    """Write a Pandas DataFrame as Parquet directly into S3."""
+    """write a pandas dataframe as parquet directly into s3."""
     buffer = io.BytesIO()
     df.to_parquet(buffer, index=False, engine="pyarrow")
     buffer.seek(0)
@@ -67,13 +67,13 @@ def put_parquet(s3, key: str, df: pd.DataFrame) -> None:
 
 
 def get_parquet(s3, key: str) -> pd.DataFrame:
-    """Read a Parquet file from S3 into a Pandas DataFrame."""
+    """read a parquet file from s3 into a pandas dataframe."""
     body = s3.get_object(Bucket=BUCKET, Key=key)["Body"].read()
     return pd.read_parquet(io.BytesIO(body), engine="pyarrow")
 
 
 def list_keys(s3, prefix: str) -> list[str]:
-    """List all S3 keys under a given prefix."""
+    """list all s3 keys under a given prefix."""
     paginator = s3.get_paginator("list_objects_v2")
     keys = []
     for page in paginator.paginate(Bucket=BUCKET, Prefix=prefix):

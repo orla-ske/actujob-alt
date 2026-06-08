@@ -1,17 +1,17 @@
 """
 jobs/utils/skills.py
-Extracts a list of known tech skills from a free-text job description.
-Uses simple keyword matching — can be upgraded to NLP later.
+extracts a list of known tech skills from a free-text job description.
+uses simple keyword matching — can be upgraded to nlp later.
 """
 from __future__ import annotations
 
 import re
 
-# ── Skill taxonomy ─────────────────────────────────────────────────────────────
-# Keys are canonical skill names stored in the output.
-# Values are regex patterns matched case-insensitively against job descriptions.
+# ── skill taxonomy ─────────────────────────────────────────────────────────────
+# keys are canonical skill names stored in the output.
+# values are regex patterns matched case-insensitively against job descriptions.
 SKILLS: dict[str, str] = {
-    # Languages
+    # languages
     "Python":       r"\bpython\b",
     "JavaScript":   r"\bjavascript\b|\bjs\b",
     "TypeScript":   r"\btypescript\b|\bts\b",
@@ -28,21 +28,21 @@ SKILLS: dict[str, str] = {
     "Ruby":         r"\bruby\b",
     "Swift":        r"\bswift\b",
 
-    # Frontend
+    # frontend
     "React":        r"\breact(?:\.js|js)?\b",
     "Vue":          r"\bvue(?:\.js|js)?\b",
     "Angular":      r"\bangular\b",
     "Next.js":      r"\bnext(?:\.js|js)\b",
     "HTML/CSS":     r"\bhtml\b|\bcss\b|\bsass\b",
 
-    # Backend / frameworks
+    # backend / frameworks
     "Node.js":      r"\bnode(?:\.js|js)?\b",
     "FastAPI":      r"\bfastapi\b",
     "Django":       r"\bdjango\b",
     "Spring Boot":  r"\bspring\s*boot\b|\bspring\b",
     "Flask":        r"\bflask\b",
 
-    # Data & ML
+    # data & ml
     "Spark":        r"\bapache\s*spark\b|\bpyspark\b",
     "Kafka":        r"\bkafka\b",
     "Airflow":      r"\bairflow\b",
@@ -53,7 +53,7 @@ SKILLS: dict[str, str] = {
     "Scikit-learn": r"\bscikit[\s-]?learn\b|\bsklearn\b",
     "LLM":          r"\bllm\b|\blarge\s*language\s*model\b",
 
-    # Databases
+    # databases
     "PostgreSQL":   r"\bpostgres(?:ql)?\b",
     "MySQL":        r"\bmysql\b",
     "MongoDB":      r"\bmongodb\b",
@@ -63,7 +63,7 @@ SKILLS: dict[str, str] = {
     "Snowflake":    r"\bsnowflake\b",
     "BigQuery":     r"\bbigquery\b",
 
-    # Cloud & DevOps
+    # cloud & devops
     "AWS":          r"\baws\b|\bamazon\s*web\s*services\b",
     "GCP":          r"\bgcp\b|\bgoogle\s*cloud\b",
     "Azure":        r"\bazure\b",
@@ -73,12 +73,12 @@ SKILLS: dict[str, str] = {
     "CI/CD":        r"\bci/cd\b|\bgithub\s*actions\b|\bjenkins\b|\bgitlab\s*ci\b",
 }
 
-# Compiled patterns for performance
+# compiled patterns for performance
 _COMPILED = {skill: re.compile(pattern, re.IGNORECASE) for skill, pattern in SKILLS.items()}
 
 
 def extract_skills(text: str) -> list[str]:
-    """Return a sorted list of skills found in the given text."""
+    """return a sorted list of skills found in the given text."""
     if not text:
         return []
     return sorted(skill for skill, pattern in _COMPILED.items() if pattern.search(text))
@@ -86,7 +86,7 @@ def extract_skills(text: str) -> list[str]:
 
 def classify_work_mode(text: str, contract_type: str = "") -> str:
     """
-    Classify a job posting as 'remote', 'hybrid', or 'on-site'
+    classify a job posting as 'remote', 'hybrid', or 'on-site'
     based on description and contract_type fields.
     """
     combined = f"{text} {contract_type}".lower()

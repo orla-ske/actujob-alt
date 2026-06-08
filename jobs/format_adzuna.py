@@ -1,10 +1,10 @@
 """
 jobs/format_adzuna.py
-Reads raw Adzuna JSON files from S3 (for a given date partition),
-normalises them into a flat Parquet schema, and writes back to S3.
+reads raw adzuna json files from s3 (for a given date partition),
+normalises them into a flat parquet schema, and writes back to s3.
 
-Raw:       raw/adzuna_jobs/{ds}/{country}_page_{n}.json
-Formatted: formatted/jobs/{ds}/adzuna.parquet
+raw:       raw/adzuna_jobs/{ds}/{country}_page_{n}.json
+formatted: formatted/jobs/{ds}/adzuna.parquet
 """
 from __future__ import annotations
 
@@ -15,8 +15,8 @@ import pandas as pd
 from jobs.utils import s3 as s3_utils
 from jobs.utils.skills import classify_work_mode, extract_skills
 
-# ── Approximate EUR exchange rates (updated periodically) ──────────────────────
-# For production: fetch live from https://data.ecb.europa.eu/
+# ── approximate eur exchange rates (updated periodically) ──────────────────────
+# for production: fetch live from https://data.ecb.europa.eu/
 EUR_RATES: dict[str, float] = {
     "GBP": 1.17,
     "USD": 0.92,
@@ -40,7 +40,7 @@ def _country_to_currency(country_code: str) -> str:
 
 
 def _parse_posting(result: dict, country: str) -> dict:
-    """Flatten a single Adzuna API result into our target schema."""
+    """flatten a single adzuna api result into our target schema."""
     currency = _country_to_currency(country)
     salary_min_raw = result.get("salary_min")
     salary_max_raw = result.get("salary_max")
@@ -62,7 +62,7 @@ def _parse_posting(result: dict, country: str) -> dict:
         "work_mode":    classify_work_mode(description, result.get("contract_type", "")),
         "contract_type":result.get("contract_type"),
         "skills":       extract_skills(description),          # list of strings
-        "skills_str":   ",".join(extract_skills(description)),# ES-friendly flat string
+        "skills_str":   ",".join(extract_skills(description)),# es-friendly flat string
         "created":      result.get("created"),
         "source":       "adzuna",
     }
@@ -70,15 +70,15 @@ def _parse_posting(result: dict, country: str) -> dict:
 
 def format_adzuna_jobs(ds: str, **kwargs) -> None:
     """
-    Main callable for the Airflow PythonOperator.
-    Reads all raw JSON files for `ds`, normalises, writes one Parquet file.
+    main callable for the airflow pythonoperator.
+    reads all raw json files for `ds`, normalises, writes one parquet file.
     """
     s3 = s3_utils.get_client()
 
     raw_prefix = f"raw/adzuna_jobs/{ds}/"
     out_key    = f"formatted/jobs/{ds}/adzuna.parquet"
 
-    # Idempotency
+    # idempotency
     if s3_utils.key_exists(s3, out_key):
         print(f"[SKIP] {out_key} already exists")
         return
@@ -89,7 +89,7 @@ def format_adzuna_jobs(ds: str, **kwargs) -> None:
 
     rows = []
     for key in raw_keys:
-        # Extract country code from key: raw/adzuna_jobs/2024-01-01/gb_page_1.json
+        # extract country code from key: raw/adzuna_jobs/2024-01-01/gb_page_1.json
         filename = key.split("/")[-1]          # gb_page_1.json
         country  = filename.split("_")[0]       # gb
 

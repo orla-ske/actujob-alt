@@ -1,13 +1,13 @@
 """
 jobs/combine_kpis.py
-Reads formatted Parquet files from both sources and produces four KPI tables:
+reads formatted parquet files from both sources and produces four kpi tables:
 
-  1. salary_by_skill          — avg/median salary per skill (from SO survey)
-  2. skill_demand_ranking     — posting count per skill per day (from Adzuna)
-  3. remote_ratio_by_country  — work_mode distribution by country (from Adzuna)
-  4. experience_salary_matrix — salary bins crossed with years of experience (from SO)
+  1. salary_by_skill          — avg/median salary per skill (from so survey)
+  2. skill_demand_ranking     — posting count per skill per day (from adzuna)
+  3. remote_ratio_by_country  — work_mode distribution by country (from adzuna)
+  4. experience_salary_matrix — salary bins crossed with years of experience (from so)
 
-Output: usage/kpis/{ds}/{kpi_name}.parquet
+output: usage/kpis/{ds}/{kpi_name}.parquet
 """
 from __future__ import annotations
 
@@ -19,14 +19,14 @@ SO_KEY = "formatted/survey/2024/so_survey.parquet"
 
 
 def _load_all_adzuna(s3, ds: str) -> pd.DataFrame:
-    """Load the formatted Adzuna Parquet for the given date."""
+    """load the formatted adzuna parquet for the given date."""
     key = f"formatted/jobs/{ds}/adzuna.parquet"
     return s3_utils.get_parquet(s3, key)
 
 
 def _kpi_salary_by_skill(survey_df: pd.DataFrame) -> pd.DataFrame:
     """
-    From the SO survey: explode the LanguageHaveWorkedWith column
+    from the so survey: explode the languagehaveworkedwith column
     and compute salary stats per skill.
     """
     df = survey_df[survey_df["salary_eur"].notna()].copy()
@@ -55,7 +55,7 @@ def _kpi_salary_by_skill(survey_df: pd.DataFrame) -> pd.DataFrame:
 
 def _kpi_skill_demand(jobs_df: pd.DataFrame, ds: str) -> pd.DataFrame:
     """
-    From Adzuna: count how many postings mention each skill on this date.
+    from adzuna: count how many postings mention each skill on this date.
     skills_str is a comma-separated string of matched skills per posting.
     """
     df = jobs_df[jobs_df["skills_str"].str.len() > 0].copy()
@@ -75,7 +75,7 @@ def _kpi_skill_demand(jobs_df: pd.DataFrame, ds: str) -> pd.DataFrame:
 
 def _kpi_remote_ratio(jobs_df: pd.DataFrame) -> pd.DataFrame:
     """
-    From Adzuna: work_mode distribution (remote / hybrid / on-site) by country.
+    from adzuna: work_mode distribution (remote / hybrid / on-site) by country.
     """
     result = (
         jobs_df.groupby(["country", "work_mode"])
@@ -89,8 +89,8 @@ def _kpi_remote_ratio(jobs_df: pd.DataFrame) -> pd.DataFrame:
 
 def _kpi_experience_salary(survey_df: pd.DataFrame) -> pd.DataFrame:
     """
-    From SO survey: average salary per experience bracket and dev type.
-    Useful for the 'salary vs seniority' Kibana panel.
+    from so survey: average salary per experience bracket and dev type.
+    useful for the 'salary vs seniority' kibana panel.
     """
     df = survey_df[
         survey_df["salary_eur"].notna() & survey_df["years_experience"].notna()
@@ -115,8 +115,8 @@ def _kpi_experience_salary(survey_df: pd.DataFrame) -> pd.DataFrame:
 
 def combine_kpis(ds: str, **kwargs) -> None:
     """
-    Main callable for the Airflow PythonOperator.
-    Loads both formatted sources and writes 4 KPI Parquet files.
+    main callable for the airflow pythonoperator.
+    loads both formatted sources and writes 4 kpi parquet files.
     """
     s3 = s3_utils.get_client()
 
@@ -127,7 +127,7 @@ def combine_kpis(ds: str, **kwargs) -> None:
         "experience_salary_matrix":f"usage/kpis/{ds}/experience_salary_matrix.parquet",
     }
 
-    # Idempotency: if all KPIs already exist, skip
+    # idempotency: if all kpis already exist, skip
     if all(s3_utils.key_exists(s3, k) for k in kpi_keys.values()):
         print(f"[SKIP] All KPIs already exist for {ds}")
         return

@@ -1,7 +1,7 @@
 """
 jobs/ingest_adzuna.py
-Fetches developer job postings from the Adzuna API and stores raw JSON in S3.
-Partitioned by logical execution date: raw/adzuna_jobs/{ds}/{country}_page_{n}.json
+fetches developer job postings from the adzuna api and stores raw json in s3.
+partitioned by logical execution date: raw/adzuna_jobs/{ds}/{country}_page_{n}.json
 """
 from __future__ import annotations
 
@@ -19,8 +19,8 @@ RESULTS_PER_PAGE = 50
 
 def fetch_adzuna_jobs(ds: str, **kwargs) -> None:
     """
-    Main callable for the Airflow PythonOperator.
-    `ds` is injected by Airflow as the logical execution date (YYYY-MM-DD).
+    main callable for the airflow pythonoperator.
+    `ds` is injected by airflow as the logical execution date (yyyy-mm-dd).
     """
     app_id  = os.environ["ADZUNA_APP_ID"]
     api_key = os.environ["ADZUNA_API_KEY"]
@@ -32,7 +32,7 @@ def fetch_adzuna_jobs(ds: str, **kwargs) -> None:
         for page in range(1, PAGES_PER_COUNTRY + 1):
             key = f"raw/adzuna_jobs/{ds}/{country}_page_{page}.json"
 
-            # Idempotency: skip if already fetched for this date
+            # idempotency: skip if already fetched for this date
             if s3_utils.key_exists(s3, key):
                 print(f"[SKIP] {key} already exists")
                 continue

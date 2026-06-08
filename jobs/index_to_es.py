@@ -1,9 +1,9 @@
 """
 jobs/index_to_es.py
-Reads the four KPI Parquet files from S3 and indexes them into Elasticsearch.
-Each KPI table gets its own index. Uses bulk indexing for performance.
+reads the four kpi parquet files from s3 and indexes them into elasticsearch.
+each kpi table gets its own index. uses bulk indexing for performance.
 
-ES indices created:
+es indices created:
   - dev-jobs-salary-by-skill
   - dev-jobs-skill-demand
   - dev-jobs-remote-ratio
@@ -18,7 +18,7 @@ from elasticsearch import Elasticsearch, helpers
 
 from jobs.utils import s3 as s3_utils
 
-# Index names must be lowercase, no spaces
+# index names must be lowercase, no spaces
 INDEX_MAP = {
     "salary_by_skill":          "dev-jobs-salary-by-skill",
     "skill_demand_ranking":     "dev-jobs-skill-demand",
@@ -35,17 +35,17 @@ def _get_es_client() -> Elasticsearch:
 
 
 def _df_to_actions(df: pd.DataFrame, index: str, ds: str):
-    """Generator yielding ES bulk action dicts from a DataFrame."""
+    """generator yielding es bulk action dicts from a dataframe."""
     for _, row in df.iterrows():
         doc = row.where(pd.notna(row), None).to_dict()
-        doc["pipeline_date"] = ds      # add execution date for time-series filtering in Kibana
+        doc["pipeline_date"] = ds      # add execution date for time-series filtering in kibana
         yield {"_index": index, "_source": doc}
 
 
 def index_to_elasticsearch(ds: str, **kwargs) -> None:
     """
-    Main callable for the Airflow PythonOperator.
-    Reads all KPI Parquets for `ds` and bulk-indexes them into Elasticsearch.
+    main callable for the airflow pythonoperator.
+    reads all kpi parquets for `ds` and bulk-indexes them into elasticsearch.
     """
     s3 = s3_utils.get_client()
     es = _get_es_client()
@@ -62,7 +62,7 @@ def index_to_elasticsearch(ds: str, **kwargs) -> None:
 
         df = s3_utils.get_parquet(s3, key)
 
-        # Replace NaN with None so ES doesn't receive NaN floats
+        # replace nan with none so es doesn't receive nan floats
         df = df.where(pd.notna(df), None)
 
         actions = list(_df_to_actions(df, index_name, ds))

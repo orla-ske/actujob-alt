@@ -1,7 +1,7 @@
 """
 jobs/ingest_so_survey.py
-Downloads the Stack Overflow 2024 Developer Survey CSV from GitHub
-and stores it in S3. Idempotent: skips if already present.
+downloads the stack overflow 2024 developer survey csv from github
+and stores it in s3. idempotent: skips if already present.
 """
 from __future__ import annotations
 
@@ -18,8 +18,8 @@ S3_KEY = "raw/so_survey/2024/survey_results_public.csv"
 
 def fetch_so_survey(**kwargs) -> None:
     """
-    Main callable for the Airflow PythonOperator.
-    Not date-partitioned — the 2024 survey is a static annual file.
+    main callable for the airflow pythonoperator.
+    not date-partitioned — the 2024 survey is a static annual file.
     """
     s3 = s3_utils.get_client()
     s3_utils.ensure_bucket(s3)
